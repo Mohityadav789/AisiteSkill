@@ -1,0 +1,16 @@
+{
+  "name": "autoresearch",
+  "version": "1.0.0",
+  "displayName": "Autoresearch Engine",
+  "description": "Self-improving research engine. 9 modes: code, deployment, content, marketing-email, marketing-campaign, sales, research, design. Modify → verify → keep → repeat. Inspired by uditgoenka/autoresearch (Karpathy's autoresearch concept).",
+  "icon": "🤖",
+  "author": "aistie-skills",
+  "color": "violet",
+  "autoActivate": {
+    "toolTypes": ["automation", "analyzer"],
+    "keywords": ["autoresearch", "automated research", "self improving", "iterative research", "deep dive", "comprehensive analysis", "multi step research", "research pipeline", "research automation"],
+    "flags": []
+  },
+  "functions": ["autoResearch", "contentMode", "salesMode", "marketingMode", "designMode"],
+  "requires": { "actions": ["web:search", "web:fetch", "ai:generate"] }
+}

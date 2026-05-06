@@ -1,0 +1,16 @@
+{
+  "name": "health-assistant",
+  "version": "1.0.0",
+  "displayName": "Personal Health Assistant",
+  "description": "Analyzes health metrics, gives personalized wellness suggestions, tracks patterns, generates meal and workout plans. Always recommends professional consultation for medical decisions.",
+  "icon": "🏥",
+  "author": "aistie-skills",
+  "color": "emerald",
+  "autoActivate": {
+    "toolTypes": ["analyzer", "chatbot", "form-tool"],
+    "keywords": ["health", "wellness", "fitness", "nutrition", "workout", "diet", "medical", "symptoms", "bmi", "calories", "exercise plan", "meal plan", "health tracker", "wellbeing"],
+    "flags": ["isChatbot"]
+  },
+  "functions": ["analyzeMetrics", "generateMealPlan", "generateWorkoutPlan", "wellnessAdvice", "trackSymptoms"],
+  "requires": { "actions": ["web:search", "ai:generate"] }
+}

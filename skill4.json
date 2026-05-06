@@ -1,0 +1,16 @@
+{
+  "name": "academic-research",
+  "version": "1.0.0",
+  "displayName": "Academic Research Pipeline",
+  "description": "Full academic pipeline: research → write → review → revise → finalize. Style calibration learns your voice. Writing Quality Check catches AI patterns. Built for actual academics.",
+  "icon": "🎓",
+  "author": "aistie-skills",
+  "color": "blue",
+  "autoActivate": {
+    "toolTypes": ["research-tool", "analyzer", "generator"],
+    "keywords": ["academic", "research paper", "literature review", "thesis", "dissertation", "scholarly", "peer review", "citation", "bibliography", "abstract", "methodology", "journal", "academic writing"],
+    "flags": ["isResearchTool"]
+  },
+  "functions": ["researchTopic", "writePaper", "reviewPaper", "literatureReview", "generateAbstract", "formatCitations"],
+  "requires": { "actions": ["web:search", "web:fetch", "ai:generate"] }
+}

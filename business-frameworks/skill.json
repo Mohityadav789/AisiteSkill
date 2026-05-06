@@ -1,0 +1,16 @@
+{
+  "name": "business-frameworks",
+  "version": "1.0.0",
+  "displayName": "Business Frameworks Suite",
+  "description": "25 skills based on Don Norman, Cialdini, Eric Ries, Alex Hormozi. UX, marketing/CRO, sales, product strategy, growth. Each skill grounded in actual published frameworks.",
+  "icon": "📐",
+  "author": "aistie-skills",
+  "color": "emerald",
+  "autoActivate": {
+    "toolTypes": ["analyzer", "generator", "form-tool"],
+    "keywords": ["business framework", "strategy framework", "swot", "porters five forces", "business model", "blue ocean", "first principles", "second order thinking", "mental models", "business analysis", "strategic planning", "business strategy"],
+    "flags": []
+  },
+  "functions": ["applyFramework", "swotAnalysis", "portersFiveForces", "blueOceanStrategy", "firstPrinciples", "hormozi", "cialdini", "ericRies"],
+  "requires": { "actions": ["web:search", "ai:generate"] }
+}

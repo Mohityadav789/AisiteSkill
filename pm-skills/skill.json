@@ -1,0 +1,16 @@
+{
+  "name": "pm-skills",
+  "version": "1.0.0",
+  "displayName": "PM Skills Suite",
+  "description": "100+ PM skills — Lean Canvas, JTBD, OKRs, PRDs, pricing, value proposition, discovery, strategy, execution, launch, growth. Slash commands chain skills.",
+  "icon": "📋",
+  "author": "aistie-skills",
+  "color": "violet",
+  "autoActivate": {
+    "toolTypes": ["analyzer", "generator", "form-tool"],
+    "keywords": ["product manager", "pm tool", "prd", "product requirements", "okr", "lean canvas", "user story", "product strategy", "product roadmap", "feature prioritization", "product launch", "go to market", "value proposition", "product discovery", "sprint planning"],
+    "flags": []
+  },
+  "functions": ["writePRD", "createLeanCanvas", "defineOKRs", "prioritizeFeatures", "writeUserStories", "buildRoadmap", "defineValueProp", "launchChecklist"],
+  "requires": { "actions": ["web:search", "ai:generate"] }
+}

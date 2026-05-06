@@ -1,0 +1,16 @@
+{
+  "name": "evidence-dialogue",
+  "version": "1.0.0",
+  "displayName": "Evidence-Based Dialogue",
+  "description": "Replaces sycophantic AI with structured critical analysis. 5 modes: FULL, INTERACTIVE Socratic, TLDR, STEELMAN (debate prep), DECISION (tradeoff table). Fixes the yes-man problem.",
+  "icon": "⚖️",
+  "author": "aistie-skills",
+  "color": "violet",
+  "autoActivate": {
+    "toolTypes": ["analyzer", "chatbot"],
+    "keywords": ["debate", "steelman", "critical thinking", "decision making", "tradeoff", "pros cons", "argument analysis", "socratic", "evidence based", "devil advocate", "counterargument"],
+    "flags": ["isChatbot"]
+  },
+  "functions": ["analyzeArgument", "steelman", "decisionMatrix", "socraticdialogue", "tldrAnalysis"],
+  "requires": { "actions": ["web:search", "ai:generate"] }
+}

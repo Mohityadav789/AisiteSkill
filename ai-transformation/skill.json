@@ -1,0 +1,16 @@
+{
+  "name": "ai-transformation",
+  "version": "1.0.0",
+  "displayName": "AI Transformation Discovery",
+  "description": "Express (15-20 min) or Deep Dive (60-90 min) consulting interview. Frameworks: BCG 10/20/70, Andrew Ng AI Playbook, Deloitte AI Maturity, Value Stream Mapping.",
+  "icon": "🔬",
+  "author": "aistie-skills",
+  "color": "blue",
+  "autoActivate": {
+    "toolTypes": ["analyzer", "form-tool"],
+    "keywords": ["ai transformation", "ai strategy", "ai adoption", "ai maturity", "digital transformation", "ai consulting", "ai implementation", "ai roadmap", "enterprise ai", "ai assessment"],
+    "flags": []
+  },
+  "functions": ["assessMaturity", "buildStrategy", "identifyUseCases", "calculateROI", "changeManagement"],
+  "requires": { "actions": ["web:search", "ai:generate"] }
+}

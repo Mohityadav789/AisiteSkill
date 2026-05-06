@@ -1,0 +1,16 @@
+{
+  "name": "jtbd-interview",
+  "version": "1.0.0",
+  "displayName": "JTBD Interview Tool",
+  "description": "Live Jobs-To-Be-Done interview. Converts customer interviews into structured briefs. Generates messaging copy from switching forces. Based on Bob Moesta's JTBD framework.",
+  "icon": "🎙️",
+  "author": "aistie-skills",
+  "color": "amber",
+  "autoActivate": {
+    "toolTypes": ["form-tool", "chatbot", "analyzer"],
+    "keywords": ["jtbd", "jobs to be done", "customer interview", "user research", "customer discovery", "switching forces", "customer motivation", "why they buy", "customer research", "user interview"],
+    "flags": []
+  },
+  "functions": ["conductInterview", "analyzeInterview", "generateMessaging", "buildPersona"],
+  "requires": { "actions": ["web:search", "ai:generate"] }
+}
