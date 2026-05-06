@@ -1,0 +1,35 @@
+{
+  "name": "social-media-os",
+  "version": "1.0.0",
+  "displayName": "Social Media OS",
+  "description": "Complete social media system — voice builder, hook generator, post scorer, content calendar, viral analysis, competitor tracking. Inspired by Charlie Hills 391K+ install skill.",
+  "icon": "📱",
+  "author": "aistie-skills",
+  "color": "rose",
+
+  "autoActivate": {
+    "toolTypes": ["social-tool", "analyzer", "automation"],
+    "keywords": [
+      "social media", "instagram", "twitter", "linkedin", "content",
+      "viral", "engagement", "followers", "caption", "post", "reel",
+      "tiktok", "social strategy", "content calendar", "content plan",
+      "growth", "audience", "hashtag", "influencer", "brand voice"
+    ],
+    "flags": ["isSocialTool", "isInstagramTool"]
+  },
+
+  "functions": [
+    "buildVoice",
+    "generateContent",
+    "scorePost",
+    "findTrends",
+    "competitorAnalysis",
+    "contentCalendar",
+    "generateHooks",
+    "analyzeEngagement"
+  ],
+
+  "requires": {
+    "actions": ["web:search", "web:fetch", "ai:generate"]
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "name": "beautiful-prose",
+  "version": "1.0.0",
+  "displayName": "Beautiful Prose",
+  "description": "Hard-edged writing style contract. Closer to Hemingway than ChatGPT. No AI tics, no fluff, no padding, no throat-clearing. Timeless, forceful English prose.",
+  "icon": "🖊️",
+  "author": "aistie-skills",
+  "color": "violet",
+  "autoActivate": {
+    "toolTypes": ["converter", "generator"],
+    "keywords": ["beautiful prose", "writing style", "improve writing", "write better", "better writer", "prose style", "literary writing", "creative writing", "narrative writing", "style guide"],
+    "flags": []
+  },
+  "functions": ["rewriteProse", "styleAnalysis", "applyVoice", "writingCoach"],
+  "requires": { "actions": ["ai:generate"] }
+}

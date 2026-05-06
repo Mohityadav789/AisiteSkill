@@ -1,0 +1,16 @@
+{
+  "name": "social-media-research",
+  "version": "1.0.0",
+  "displayName": "Social Media Research",
+  "description": "Analyzes live public opinion and trends on Reddit and X using real discussions and quotes. Sentiment analysis with receipts — not guesses.",
+  "icon": "📡",
+  "author": "aistie-skills",
+  "color": "cyan",
+  "autoActivate": {
+    "toolTypes": ["search-tool", "analyzer"],
+    "keywords": ["social media research", "reddit research", "public opinion", "sentiment analysis", "market research", "what people say", "social listening", "brand mentions", "community research"],
+    "flags": ["isResearchTool"]
+  },
+  "functions": ["redditResearch", "sentimentAnalysis", "trendDetection", "audienceInsights"],
+  "requires": { "actions": ["web:search", "web:fetch", "ai:generate"] }
+}

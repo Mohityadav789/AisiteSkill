@@ -1,0 +1,32 @@
+{
+  "name": "deep-research",
+  "version": "1.0.0",
+  "displayName": "Deep Research Engine",
+  "description": "8-phase research pipeline with parallel searches, source fetching, credibility scoring, and [1][2][3] inline citations. Beats Perplexity on depth.",
+  "icon": "🔍",
+  "author": "aistie-skills",
+  "color": "blue",
+
+  "autoActivate": {
+    "toolTypes": ["search-tool", "analyzer", "summarizer"],
+    "keywords": [
+      "research", "analyze", "investigate", "find out", "report",
+      "deep research", "web research", "answer with sources",
+      "fact check", "citations", "source links", "study", "compare",
+      "perplexity", "research assistant", "research tool"
+    ],
+    "flags": ["isResearchTool"]
+  },
+
+  "functions": [
+    "deepResearch",
+    "quickFacts",
+    "compareTopics",
+    "credibilityScore",
+    "trendResearch"
+  ],
+
+  "requires": {
+    "actions": ["web:search", "web:fetch", "ai:generate"]
+  }
+}

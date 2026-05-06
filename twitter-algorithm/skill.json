@@ -1,0 +1,16 @@
+{
+  "name": "twitter-algorithm",
+  "version": "1.0.0",
+  "displayName": "Twitter Algorithm Optimizer",
+  "description": "Rewrites tweets using insights from Twitter's open-source algorithm. Optimizes for actual reach mechanics — not vibes. Inspired by Composio skill.",
+  "icon": "🐦",
+  "author": "aistie-skills",
+  "color": "blue",
+  "autoActivate": {
+    "toolTypes": ["social-tool", "generator"],
+    "keywords": ["twitter", "tweet", "x post", "twitter algorithm", "twitter reach", "twitter growth", "rewrite tweet", "viral tweet", "twitter impressions"],
+    "flags": ["isSocialTool"]
+  },
+  "functions": ["optimizeTweet", "analyzeThread", "tweetCalendar", "findViralAngles"],
+  "requires": { "actions": ["web:search", "ai:generate"] }
+}

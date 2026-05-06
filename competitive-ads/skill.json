@@ -1,0 +1,16 @@
+{
+  "name": "competitive-ads",
+  "version": "1.0.0",
+  "displayName": "Competitive Ads Extractor",
+  "description": "Pulls competitor ads from ad libraries. Analyzes messaging and creative patterns. Great for ad teardowns before launching campaigns.",
+  "icon": "📊",
+  "author": "aistie-skills",
+  "color": "amber",
+  "autoActivate": {
+    "toolTypes": ["analyzer", "search-tool"],
+    "keywords": ["competitor ads", "ad library", "ad spy", "competitor advertising", "ad teardown", "facebook ads competitor", "google ads competitor", "ad analysis", "ad strategy"],
+    "flags": []
+  },
+  "functions": ["extractCompetitorAds", "analyzeAdPatterns", "buildAdStrategy", "writeAdCopy"],
+  "requires": { "actions": ["web:search", "web:fetch", "ai:generate"] }
+}

@@ -1,0 +1,33 @@
+{
+  "name": "geo-seo-optimizer",
+  "version": "1.0.0",
+  "displayName": "GEO / SEO Optimizer",
+  "description": "GEO-first SEO skill. AI search optimization, citability scoring, AI crawler analysis, brand authority, schema markup, platform-specific optimization. Inspired by AgriciDaniel 3.5K+ install skill.",
+  "icon": "🔎",
+  "author": "aistie-skills",
+  "color": "blue",
+
+  "autoActivate": {
+    "toolTypes": ["analyzer", "search-tool"],
+    "keywords": [
+      "seo", "keywords", "ranking", "traffic", "backlinks",
+      "google", "search engine", "organic", "geo", "ai search",
+      "perplexity seo", "chatgpt seo", "ai visibility", "schema",
+      "citability", "search optimization", "seo audit", "seo tool"
+    ],
+    "flags": []
+  },
+
+  "functions": [
+    "geoAudit",
+    "keywordResearch",
+    "seoAudit",
+    "schemaGenerator",
+    "contentOptimizer",
+    "citabilityScore"
+  ],
+
+  "requires": {
+    "actions": ["web:search", "web:fetch", "ai:generate"]
+  }
+}

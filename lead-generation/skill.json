@@ -1,0 +1,32 @@
+{
+  "name": "lead-generation",
+  "version": "1.0.0",
+  "displayName": "Lead Generation Engine",
+  "description": "Full B2B lead gen pipeline — finds real companies, extracts verified emails, scores leads, saves to Google Sheets, sends cold outreach, creates follow-up calendar events. One domain = one company.",
+  "icon": "🎯",
+  "author": "aistie-skills",
+  "color": "emerald",
+
+  "autoActivate": {
+    "toolTypes": ["automation", "search-tool"],
+    "keywords": [
+      "leads", "lead generation", "outreach", "prospect", "cold email",
+      "b2b", "clients", "contacts", "find companies", "find emails",
+      "email list", "sales outreach", "business finder", "agency finder",
+      "client finder", "crm", "sales tool"
+    ],
+    "flags": ["needsEmail"]
+  },
+
+  "functions": [
+    "findLeads",
+    "enrichLead",
+    "scoreLeads",
+    "buildOutreach",
+    "fullCRMWorkflow"
+  ],
+
+  "requires": {
+    "actions": ["web:search", "web:fetch", "ai:generate", "email:send", "email:bulk", "sheets:create", "sheets:append", "calendar:create-event"]
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "name": "email-marketing",
+  "version": "1.0.0",
+  "displayName": "Email Marketing Bible",
+  "description": "55,000-word email marketing expertise condensed into skills — subject lines, sequences, segmentation, win-back flows, deliverability. Beats generic AI email by 10x.",
+  "icon": "📧",
+  "author": "aistie-skills",
+  "color": "amber",
+
+  "autoActivate": {
+    "toolTypes": ["automation", "generator"],
+    "keywords": [
+      "email campaign", "email marketing", "newsletter", "subject line",
+      "email sequence", "drip campaign", "email copywriting", "email template",
+      "welcome email", "win-back email", "abandoned cart", "email funnel",
+      "open rate", "click rate", "email strategy", "email list"
+    ],
+    "flags": ["needsEmail"]
+  },
+
+  "functions": [
+    "writeSubjectLines",
+    "buildSequence",
+    "writeEmail",
+    "segmentStrategy",
+    "winBackCampaign",
+    "auditEmail"
+  ],
+
+  "requires": {
+    "actions": ["ai:generate", "web:search"]
+  }
+}

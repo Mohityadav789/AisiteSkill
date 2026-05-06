@@ -1,0 +1,35 @@
+{
+  "name": "marketing-module",
+  "version": "1.0.0",
+  "displayName": "Marketing Module",
+  "description": "43 marketing skills in 7 pods — Content, SEO, CRO, Channels, Growth, Intelligence, Sales. Inspired by alirezarezvani 5.2K+ install skill. Orchestration router included.",
+  "icon": "📣",
+  "author": "aistie-skills",
+  "color": "amber",
+
+  "autoActivate": {
+    "toolTypes": ["automation", "analyzer", "generator"],
+    "keywords": [
+      "marketing", "campaign", "brand", "audience", "funnel",
+      "conversion", "growth", "cro", "content strategy", "marketing plan",
+      "marketing strategy", "go to market", "gtm", "marketing tool",
+      "marketing analyzer", "marketing assistant"
+    ],
+    "flags": []
+  },
+
+  "functions": [
+    "route",
+    "contentMarketing",
+    "seoStrategy",
+    "croAudit",
+    "channelStrategy",
+    "growthPlan",
+    "competitorIntelligence",
+    "salesEnablement"
+  ],
+
+  "requires": {
+    "actions": ["web:search", "web:fetch", "ai:generate"]
+  }
+}

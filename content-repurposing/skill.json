@@ -1,0 +1,16 @@
+{
+  "name": "content-repurposing",
+  "version": "1.0.0",
+  "displayName": "Content Repurposing Engine",
+  "description": "Converts one piece of content (YouTube, PDF, article, blog) into 10+ formats — threads, carousels, newsletters, scripts, shorts. Inspired by joeseesun NotebookLM skill.",
+  "icon": "♻️",
+  "author": "aistie-skills",
+  "color": "emerald",
+  "autoActivate": {
+    "toolTypes": ["converter", "generator"],
+    "keywords": ["repurpose", "content repurposing", "turn into", "convert content", "one to many", "repurpose youtube", "repurpose blog", "repurpose podcast", "content recycling", "multi format"],
+    "flags": ["isYouTubeTool"]
+  },
+  "functions": ["repurposeUrl", "repurposeText", "buildContentSystem", "carouselScript"],
+  "requires": { "actions": ["web:fetch", "web:search", "ai:generate"] }
+}

@@ -1,0 +1,16 @@
+{
+  "name": "direct-response",
+  "version": "1.0.0",
+  "displayName": "Direct Response Suite",
+  "description": "Avatar extraction, offer extraction, Schwartz awareness mapper, mechanism builder, headline matrix, objection crusher, ad angle multiplier. From Kim Barrett's direct-response system.",
+  "icon": "💬",
+  "author": "aistie-skills",
+  "color": "rose",
+  "autoActivate": {
+    "toolTypes": ["generator", "analyzer"],
+    "keywords": ["direct response", "copywriting", "sales copy", "offer", "avatar", "headline", "objection", "ad copy", "sales page", "vsl", "landing page copy"],
+    "flags": []
+  },
+  "functions": ["extractAvatar", "buildOffer", "headlineMatrix", "crushObjections", "awarenessMapper"],
+  "requires": { "actions": ["web:search", "ai:generate"] }
+}

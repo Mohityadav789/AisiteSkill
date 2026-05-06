@@ -1,0 +1,30 @@
+{
+  "name": "hook-generator",
+  "version": "1.0.0",
+  "displayName": "Hook Generator",
+  "description": "5-framework hook generator — PAS, AIDA, BAB, STAR, SLAY. Writes 25+ hooks per topic. Stops the scroll in 3 seconds. Works for social posts, emails, ads, videos.",
+  "icon": "🪝",
+  "author": "aistie-skills",
+  "color": "rose",
+
+  "autoActivate": {
+    "toolTypes": ["generator", "ai-tool"],
+    "keywords": [
+      "hook", "headline", "attention", "scroll", "opener", "intro",
+      "hook generator", "caption hook", "ad copy", "headline generator",
+      "content hook", "viral hook", "copywriting"
+    ],
+    "flags": []
+  },
+
+  "functions": [
+    "generateHooks",
+    "rewriteHook",
+    "hookForPlatform",
+    "viralHookFormulas"
+  ],
+
+  "requires": {
+    "actions": ["ai:generate", "web:search"]
+  }
+}

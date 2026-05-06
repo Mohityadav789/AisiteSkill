@@ -1,0 +1,30 @@
+{
+  "name": "humanizer",
+  "version": "1.0.0",
+  "displayName": "Humanizer",
+  "description": "Multi-pass AI writing remover. Catches em-dash overuse, throat-clearing openers, rule-of-three padding, synonym cycling, uniform paragraph patterns. Makes AI text sound genuinely human.",
+  "icon": "✍️",
+  "author": "aistie-skills",
+  "color": "violet",
+
+  "autoActivate": {
+    "toolTypes": ["converter", "ai-tool"],
+    "keywords": [
+      "humanize", "rewrite", "remove ai", "natural writing", "human writing",
+      "ai detector", "bypass ai", "make human", "ai writing", "rewrite content",
+      "humanizer", "paraphrase", "undetectable ai", "make it sound human"
+    ],
+    "flags": []
+  },
+
+  "functions": [
+    "humanize",
+    "detectAIPatterns",
+    "rewriteSection",
+    "matchVoice"
+  ],
+
+  "requires": {
+    "actions": ["ai:generate"]
+  }
+}
