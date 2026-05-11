@@ -1,154 +1,280 @@
 // youtube-analyzer/skill.js
-// Universal YouTube Channel Analyzer
-// No require() needed — uses execute() for everything
+// Universal YouTube Channel Analyzer — Real web data only, no hallucination
+// Uses execute() for all external calls — NO require('axios')
 
 const CURRENT_YEAR = new Date().getFullYear();
+
+// ─────────────────────────────────────────────────────────────────────────────
+// HELPER — clean YouTube URL and extract handle
+// ─────────────────────────────────────────────────────────────────────────────
+function extractHandle(input) {
+  if (!input) return '';
+
+  // Remove tracking params (?si=xxx &feature=xxx etc)
+  let clean = '';
+  try {
+    const urlObj = new URL(input);
+    clean = urlObj.origin + urlObj.pathname;
+  } catch(e) {
+    clean = input.split('?')[0].trim();
+  }
+
+  // Remove trailing slash
+  clean = clean.replace(/\/$/, '');
+
+  // Extract handle from common YouTube URL patterns
+  const handleMatch = clean.match(/\/@([^\/\s?&]+)/);
+  const cMatch     = clean.match(/\/c\/([^\/\s?&]+)/);
+  const uMatch     = clean.match(/\/user\/([^\/\s?&]+)/);
+
+  if (handleMatch) return handleMatch[1];
+  if (cMatch)      return cMatch[1];
+  if (uMatch)      return uMatch[1];
+
+  // If it's a plain name (not a URL) just return it
+  if (!input.startsWith('http')) return input.trim();
+
+  // Last resort — last path segment
+  return clean.split('/').pop() || '';
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 1 — ANALYZE CHANNEL
 // ─────────────────────────────────────────────────────────────────────────────
 async function analyzeChannel({ channelUrl, channelName }, execute) {
-  console.log(`📺 Analyzing YouTube channel: ${channelUrl || channelName}`);
+  const rawInput = channelUrl || channelName || '';
+  console.log(`📺 analyzeChannel called with: ${rawInput}`);
 
-  const searchQuery = channelName || channelUrl;
+  // Step 1 — Extract clean handle
+  const handle = extractHandle(rawInput);
+  const cleanUrl = 'https://www.youtube.com/@' + handle;
 
-  const [channelData, statsData, recentData] = await Promise.all([
-    execute('web:search', {
-      query: searchQuery + ' youtube channel subscribers views ' + CURRENT_YEAR,
-      count: 6
-    }),
-    execute('web:search', {
-      query: searchQuery + ' youtube channel stats analytics growth',
-      count: 5
-    }),
-    execute('web:search', {
-      query: searchQuery + ' youtube latest videos ' + CURRENT_YEAR,
-      count: 5
-    })
-  ]);
+  console.log(`📺 Clean handle: ${handle}`);
 
-  // Try fetching channel page directly
-  let channelPageContent = '';
-  try {
-    const channelPage = await execute('web:fetch', {
-      url: channelUrl || 'https://www.youtube.com/@' + searchQuery
-    });
-    channelPageContent = (channelPage?.content || '').slice(0, 3000);
-  } catch(e) {
-    console.warn('Could not fetch channel page:', e.message);
+  if (!handle) {
+    return {
+      success: false,
+      error: 'Could not extract channel name from input. Please paste the channel name like "MrBeast" or URL like "https://youtube.com/@MrBeast"'
+    };
   }
 
+  // Step 2 — Parallel web searches with clean handle
+  let s1, s2, s3, s4;
+  try {
+    [s1, s2, s3, s4] = await Promise.all([
+      execute('web:search', {
+        query: handle + ' youtube channel subscribers views ' + CURRENT_YEAR,
+        count: 6
+      }),
+      execute('web:search', {
+        query: '"' + handle + '" youtube channel niche content type',
+        count: 5
+      }),
+      execute('web:search', {
+        query: handle + ' youtuber about videos genre language',
+        count: 5
+      }),
+      execute('web:search', {
+        query: 'youtube.com/@' + handle,
+        count: 4
+      })
+    ]);
+  } catch(e) {
+    console.warn('Search error:', e.message);
+  }
+
+  // Step 3 — Try fetching the actual channel page
+  let channelPageContent = '';
+  const urlsToTry = [
+    cleanUrl,
+    'https://www.youtube.com/c/' + handle,
+    'https://www.youtube.com/user/' + handle
+  ];
+
+  for (const url of urlsToTry) {
+    try {
+      console.log(`🔍 Fetching: ${url}`);
+      const page = await execute('web:fetch', { url });
+      if (page?.content && page.content.length > 100) {
+        channelPageContent = page.content.slice(0, 3000);
+        console.log(`✅ Channel page fetched: ${channelPageContent.length} chars`);
+        break;
+      }
+    } catch(e) {
+      console.warn('Could not fetch:', url);
+    }
+  }
+
+  // Step 4 — Combine search results
   const searchContext = [
-    ...(channelData?.results || []),
-    ...(statsData?.results || []),
-    ...(recentData?.results || [])
-  ].map(r => r.title + ': ' + r.snippet).join('\n');
+    ...(s1?.results || []),
+    ...(s2?.results || []),
+    ...(s3?.results || []),
+    ...(s4?.results || [])
+  ].map(r => (r.title || '') + ': ' + (r.snippet || '')).join('\n');
 
+  console.log(`📊 Search context: ${searchContext.length} chars`);
+
+  if (!searchContext || searchContext.length < 30) {
+    return {
+      success: false,
+      error: `No public data found for "${handle}". The channel may be very new, private, or the name may be incorrect. Try using the exact channel handle from the YouTube URL.`
+    };
+  }
+
+  // Step 5 — AI analyzes ONLY real data found
+  // Step 5 — AI analyzes whatever data we found
   const analysis = await execute('ai:generate', {
-    systemPrompt: `You are a YouTube channel analytics expert for ${CURRENT_YEAR}.
-Analyze real search data and return ONLY valid JSON, no markdown.`,
-    prompt: `Analyze this YouTube channel: "${searchQuery}"
+    systemPrompt: `You are a YouTube channel analyst for ${CURRENT_YEAR}.
+Use information from search results and channel page.
+If specific data like subscriber count is not found, write "not found".
+NEVER invent numbers. Make reasonable inferences from what IS available.
+Return ONLY valid JSON, no markdown.`,
+    prompt: `Analyze YouTube channel: "@${handle}"
+Clean URL: ${cleanUrl}
 
-Real data from web:
-${searchContext.slice(0, 2500)}
+All data found:
+${combinedContext.slice(0, 2500)}
 
-Channel page content:
-${channelPageContent}
-
-Return JSON:
+Return JSON — for any field not found write "not found":
 {
-  "channelName": "exact channel name",
-  "handle": "@handle if found",
-  "niche": "main content niche",
-  "subNiche": "specific focus area",
-  "estimatedSubscribers": "number or range like 500K-1M",
-  "estimatedViews": "total views estimate",
-  "uploadFrequency": "how often they post",
-  "avgVideoLength": "average video length",
-  "contentStyle": "educational|entertainment|tutorial|vlog|review|news",
-  "targetAudience": "who watches this channel",
-  "topTopics": ["topic1", "topic2", "topic3", "topic4", "topic5"],
-  "contentStrengths": ["strength1", "strength2", "strength3"],
-  "contentWeaknesses": ["weakness1", "weakness2"],
-  "monetization": "likely monetization methods",
-  "engagementLevel": "low|medium|high|viral",
-  "growthTrend": "growing|stable|declining",
-  "uniqueValueProposition": "what makes this channel unique",
-  "bestPerformingContentType": "what content gets most views"
+  "channelName": "name found OR @${handle}",
+  "handle": "@${handle}",
+  "channelUrl": "${cleanUrl}",
+  "niche": "infer from channel name and any available data",
+  "subNiche": "specific focus if found",
+  "estimatedSubscribers": "exact number OR not found",
+  "estimatedViews": "total views OR not found",
+  "uploadFrequency": "frequency if mentioned OR not found",
+  "avgVideoLength": "average length if mentioned OR not found",
+  "contentStyle": "infer from name and data available",
+  "targetAudience": "infer from channel name and niche",
+  "topTopics": ["infer from available data"],
+  "contentStrengths": ["infer from what is available"],
+  "contentWeaknesses": ["not enough data to determine"],
+  "growthTrend": "not found",
+  "uniqueValueProposition": "infer from channel name and niche",
+  "language": "infer if possible OR not found",
+  "country": "not found",
+  "dataQuality": "low"
 }`,
-    maxTokens: 1200
+    maxTokens: 1000
   });
 
   try {
     const raw = analysis?.output || '{}';
     const jsonMatch = raw.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) return { success: false, error: 'Could not analyze channel' };
+    if (!jsonMatch) {
+      return { success: false, error: 'Could not parse channel analysis. Please try again.' };
+    }
     const parsed = JSON.parse(jsonMatch[0]);
-    return { success: true, ...parsed, searchQuery };
+    console.log(`✅ Channel analyzed: ${parsed.channelName}, niche: ${parsed.niche}, quality: ${parsed.dataQuality}`);
+    return {
+      success: true,
+      ...parsed,
+      cleanHandle: handle,
+      cleanUrl
+    };
   } catch(e) {
-    console.error('analyzeChannel error:', e.message);
-    return { success: false, error: e.message };
+    console.error('analyzeChannel parse error:', e.message);
+    return { success: false, error: 'Analysis parse failed: ' + e.message };
   }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 2 — FIND TRENDING VIDEOS IN NICHE
+// 2 — FIND TRENDING VIDEOS
 // ─────────────────────────────────────────────────────────────────────────────
 async function findTrendingVideos({ niche, channelName, count }, execute) {
-  console.log(`🔥 Finding trending YouTube videos: ${niche}`);
-
+  console.log(`🔥 findTrendingVideos: ${niche}`);
   count = count || 8;
 
-  const [trending, viral, recent] = await Promise.all([
+  const [s1, s2, s3, s4] = await Promise.all([
     execute('web:search', {
-      query: niche + ' youtube trending videos ' + CURRENT_YEAR + ' most views',
+      query: '"' + handle + '" youtube',
       count: 6
     }),
     execute('web:search', {
-      query: 'viral youtube ' + niche + ' video ' + CURRENT_YEAR,
+      query: handle + ' youtube channel',
       count: 5
     }),
     execute('web:search', {
-      query: niche + ' youtube shorts trending ' + CURRENT_YEAR,
+      query: '@' + handle + ' youtube videos',
+      count: 5
+    }),
+    execute('web:search', {
+      query: handle + ' youtuber',
       count: 4
     })
   ]);
+  // Try Reddit for community signals
+  let redditSignals = '';
+  try {
+    const reddit = await execute('web:fetch', {
+      url: 'https://www.reddit.com/r/youtube/search.json?q=' + encodeURIComponent(niche) + '&sort=hot&limit=5&t=week'
+    });
+    const redditJson = JSON.parse(reddit?.content || '{}');
+    redditSignals = (redditJson?.data?.children || [])
+      .map(p => 'Reddit trending: ' + p.data?.title)
+      .slice(0, 4)
+      .join('\n');
+  } catch(e) {}
 
-  const allResults = [
-    ...(trending?.results || []),
-    ...(viral?.results || []),
-    ...(recent?.results || [])
-  ].map(r => r.title + ': ' + r.snippet).join('\n');
+  const searchContext = [
+    ...(r1?.results || []),
+    ...(r2?.results || []),
+    ...(r3?.results || [])
+  ].map(r => (r.title || '') + ': ' + (r.snippet || '')).join('\n');
+
+  // Even if search found nothing — still try with channel page content
+// Small/new channels have no web presence but YouTube page still works
+if (!searchContext && !channelPageContent) {
+  return {
+    success: false,
+    error: `Could not reach YouTube for "${handle}". Please check your internet connection and try again.`
+  };
+}
+
+// If search found little data — use what we have + warn user
+const combinedContext = (searchContext || '') + '\n' + (channelPageContent || '');
+if (combinedContext.trim().length < 30) {
+  return {
+    success: false,
+    error: `"${handle}" appears to be a very new or private channel with no public data yet. Try a channel with more videos published.`
+  };
+}
 
   const result = await execute('ai:generate', {
-    systemPrompt: `You are a YouTube trends expert for ${CURRENT_YEAR}.
-Extract trending video patterns from search data.
+    systemPrompt: `You are a YouTube trends analyst for ${CURRENT_YEAR}.
+Extract trending patterns ONLY from the search data provided.
+Do NOT invent video titles or topics not mentioned in the data.
 Return ONLY valid JSON, no markdown.`,
-    prompt: `Find trending YouTube videos for niche: "${niche}"
+    prompt: `Find trending YouTube patterns for niche: "${niche}"
 ${channelName ? 'Channel context: ' + channelName : ''}
 
-Real search data:
-${allResults.slice(0, 2000)}
+REAL web search data:
+${searchContext.slice(0, 2000)}
 
-Return JSON:
+Reddit community signals:
+${redditSignals || 'none found'}
+
+Based ONLY on above data return JSON:
 {
   "trending": [
     {
-      "title": "video title pattern that's trending",
+      "title": "video topic pattern from data",
       "topic": "main topic",
-      "estimatedViews": "view range like 1M-5M",
-      "whyTrending": "reason based on search data",
-      "videoType": "short|long|series",
-      "thumbnailStyle": "describe the thumbnail style",
-      "hookIdea": "first 10 seconds hook",
-      "trendScore": 9
+      "estimatedViews": "view range found in data",
+      "whyTrending": "reason from real data",
+      "videoType": "short|long",
+      "hookIdea": "hook based on patterns found",
+      "trendScore": 8
     }
   ],
-  "risingTopics": ["topic just starting to trend"],
-  "peakingTopics": ["at peak now post immediately"],
-  "avoidTopics": ["oversaturated topics"],
-  "bestVideoLength": "ideal length for this niche right now",
-  "shortsOpportunity": "shorts trend in this niche"
+  "risingTopics": ["topics gaining traction in data"],
+  "peakingTopics": ["at peak now — post immediately"],
+  "avoidTopics": ["oversaturated from data"],
+  "bestVideoLength": "based on what data shows",
+  "shortsOpportunity": "shorts trend found in data"
 }`,
     maxTokens: 1500
   });
@@ -156,7 +282,7 @@ Return JSON:
   try {
     const raw = result?.output || '{}';
     const jsonMatch = raw.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) return { trending: [], risingTopics: [], peakingTopics: [] };
+    if (!jsonMatch) return { success: true, trending: [], risingTopics: [] };
     const parsed = JSON.parse(jsonMatch[0]);
     return {
       success: true,
@@ -170,7 +296,7 @@ Return JSON:
     };
   } catch(e) {
     console.error('findTrendingVideos error:', e.message);
-    return { trending: [], risingTopics: [], peakingTopics: [], error: e.message };
+    return { success: false, trending: [], risingTopics: [], error: e.message };
   }
 }
 
@@ -178,78 +304,76 @@ Return JSON:
 // 3 — GENERATE VIDEO IDEAS
 // ─────────────────────────────────────────────────────────────────────────────
 async function generateVideoIdeas({ niche, channelAnalysis, trendData, count }, execute) {
-  console.log(`💡 Generating video ideas for: ${niche}`);
-
+  console.log(`💡 generateVideoIdeas: ${niche}`);
   count = count || 10;
 
-  // Search for content gaps
-  const [gaps, competitor, audience] = await Promise.all([
+  const [r1, r2, r3] = await Promise.all([
     execute('web:search', {
-      query: niche + ' youtube content gap missing videos ' + CURRENT_YEAR,
+      query: niche + ' youtube content ideas ' + CURRENT_YEAR + ' what to make',
       count: 5
     }),
     execute('web:search', {
-      query: 'best ' + niche + ' youtube channel ideas ' + CURRENT_YEAR,
+      query: niche + ' youtube audience questions reddit what people want to watch',
       count: 5
     }),
     execute('web:search', {
-      query: niche + ' youtube audience questions reddit quora',
+      query: 'most searched ' + niche + ' youtube topics ' + CURRENT_YEAR,
       count: 5
     })
   ]);
 
   const gapContext = [
-    ...(gaps?.results || []),
-    ...(competitor?.results || []),
-    ...(audience?.results || [])
-  ].map(r => r.title + ': ' + r.snippet).join('\n');
+    ...(r1?.results || []),
+    ...(r2?.results || []),
+    ...(r3?.results || [])
+  ].map(r => (r.title || '') + ': ' + (r.snippet || '')).join('\n');
 
-  const channelContext = channelAnalysis ? `
-Channel niche: ${channelAnalysis.niche}
-Content style: ${channelAnalysis.contentStyle}
-Target audience: ${channelAnalysis.targetAudience}
-Top topics: ${(channelAnalysis.topTopics || []).join(', ')}
+  const channelContext = (channelAnalysis?.success && channelAnalysis?.niche) ? `
+Channel: ${channelAnalysis.channelName || niche}
+Niche: ${channelAnalysis.niche}
+Style: ${channelAnalysis.contentStyle || 'unknown'}
+Audience: ${channelAnalysis.targetAudience || 'general'}
 Strengths: ${(channelAnalysis.contentStrengths || []).join(', ')}
-` : '';
+Language: ${channelAnalysis.language || 'unknown'}
+` : `Niche: ${niche}`;
 
-  const trendContext = trendData ? `
-Currently trending: ${(trendData.trending || []).slice(0, 3).map(t => t.topic).join(', ')}
-Rising topics: ${(trendData.risingTopics || []).slice(0, 3).join(', ')}
+  const trendContext = (trendData?.trending?.length) ? `
+Real trending topics from web: ${trendData.trending.slice(0, 3).map(t => t.topic).join(', ')}
+Rising: ${(trendData.risingTopics || []).slice(0, 3).join(', ')}
 ` : '';
 
   const result = await execute('ai:generate', {
-    systemPrompt: `You are a world-class YouTube content strategist for ${CURRENT_YEAR}.
-You create video ideas that get millions of views.
+    systemPrompt: `You are a YouTube content strategist for ${CURRENT_YEAR}.
+Generate video ideas based on real audience demand found in search data.
 Return ONLY valid JSON, no markdown.`,
-    prompt: `Generate ${count} viral YouTube video ideas for niche: "${niche}"
+    prompt: `Generate ${count} YouTube video ideas for niche: "${niche}"
 
 ${channelContext}
 ${trendContext}
 
-Content gap research:
+Real audience demand from web:
 ${gapContext.slice(0, 1800)}
 
 Return JSON:
 {
   "ideas": [
     {
-      "title": "exact video title optimized for YouTube search",
-      "hook": "first 30 seconds script hook",
-      "thumbnail": "thumbnail concept description",
+      "title": "specific SEO-optimized video title",
+      "hook": "first 30 seconds hook script",
+      "thumbnail": "thumbnail concept",
       "keyPoints": ["point1", "point2", "point3"],
-      "estimatedViews": "view range prediction",
-      "difficulty": "easy|medium|hard to make",
+      "estimatedViews": "realistic view prediction",
+      "difficulty": "easy|medium|hard",
       "videoType": "short|long|series",
-      "idealLength": "ideal video length",
+      "idealLength": "ideal length in minutes",
       "seoKeywords": ["keyword1", "keyword2", "keyword3"],
       "viralPotential": "low|medium|high|viral",
-      "whyItWillWork": "reason this will get views",
-      "callToAction": "what CTA to use",
-      "contentGap": "what gap this fills"
+      "whyItWillWork": "reason based on audience demand",
+      "callToAction": "end CTA"
     }
   ],
-  "seriesIdea": "a series concept for the channel",
-  "shortsIdeas": ["short1", "short2", "short3"],
+  "seriesIdea": "series concept for the channel",
+  "shortsIdeas": ["short idea 1", "short idea 2", "short idea 3"],
   "contentCalendar": "suggested posting schedule"
 }`,
     maxTokens: 2500
@@ -258,7 +382,7 @@ Return JSON:
   try {
     const raw = result?.output || '{}';
     const jsonMatch = raw.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) return { ideas: [], shortsIdeas: [] };
+    if (!jsonMatch) return { success: true, ideas: [], shortsIdeas: [] };
     const parsed = JSON.parse(jsonMatch[0]);
     return {
       success: true,
@@ -270,7 +394,7 @@ Return JSON:
     };
   } catch(e) {
     console.error('generateVideoIdeas error:', e.message);
-    return { ideas: [], shortsIdeas: [], error: e.message };
+    return { success: false, ideas: [], shortsIdeas: [], error: e.message };
   }
 }
 
@@ -278,56 +402,54 @@ Return JSON:
 // 4 — ANALYZE SEO
 // ─────────────────────────────────────────────────────────────────────────────
 async function analyzeSEO({ videoTitle, niche, channelName }, execute) {
-  console.log(`🔎 Analyzing YouTube SEO for: ${videoTitle}`);
+  console.log(`🔎 analyzeSEO: ${videoTitle}`);
 
-  const [titleSearch, keywordSearch, competitorSearch] = await Promise.all([
+  const [r1, r2, r3] = await Promise.all([
     execute('web:search', {
-      query: '"' + videoTitle + '" youtube views site:youtube.com',
+      query: '"' + videoTitle + '" youtube',
       count: 5
     }),
     execute('web:search', {
-      query: niche + ' youtube SEO keywords tags ' + CURRENT_YEAR,
+      query: niche + ' youtube best keywords tags ' + CURRENT_YEAR,
       count: 5
     }),
     execute('web:search', {
-      query: 'youtube ' + niche + ' top ranking videos keywords',
-      count: 5
+      query: niche + ' youtube title ideas high views ' + CURRENT_YEAR,
+      count: 4
     })
   ]);
 
   const searchData = [
-    ...(titleSearch?.results || []),
-    ...(keywordSearch?.results || []),
-    ...(competitorSearch?.results || [])
-  ].map(r => r.title + ': ' + r.snippet).join('\n');
+    ...(r1?.results || []),
+    ...(r2?.results || []),
+    ...(r3?.results || [])
+  ].map(r => (r.title || '') + ': ' + (r.snippet || '')).join('\n');
 
   const result = await execute('ai:generate', {
     systemPrompt: `You are a YouTube SEO expert for ${CURRENT_YEAR}.
-Analyze video title and provide optimization recommendations.
+Analyze title SEO using real search data.
 Return ONLY valid JSON, no markdown.`,
-    prompt: `Analyze YouTube SEO for:
-Title: "${videoTitle}"
+    prompt: `Analyze YouTube SEO for: "${videoTitle}"
 Niche: ${niche}
 Channel: ${channelName || 'unknown'}
 
-Search data:
+Real search data:
 ${searchData.slice(0, 1500)}
 
 Return JSON:
 {
   "seoScore": 75,
   "titleAnalysis": {
-    "strengths": ["what works in title"],
-    "weaknesses": ["what to improve"],
-    "optimizedTitle": "improved version of title",
-    "altTitles": ["alternative title 1", "alternative title 2"]
+    "strengths": ["strength"],
+    "weaknesses": ["weakness"],
+    "optimizedTitle": "improved title",
+    "altTitles": ["alt 1", "alt 2"]
   },
   "recommendedTags": ["tag1", "tag2", "tag3", "tag4", "tag5"],
   "recommendedDescription": "first 150 chars of description",
-  "thumbnailTips": ["thumbnail tip 1", "thumbnail tip 2"],
+  "thumbnailTips": ["tip1", "tip2"],
   "bestPostTime": "best day and time to publish",
   "competitionLevel": "low|medium|high",
-  "searchVolume": "estimated search volume for main keyword",
   "improvements": ["improvement1", "improvement2", "improvement3"]
 }`,
     maxTokens: 1000
@@ -336,10 +458,9 @@ Return JSON:
   try {
     const raw = result?.output || '{}';
     const jsonMatch = raw.match(/\{[\s\S]*\}/);
-    return jsonMatch ? JSON.parse(jsonMatch[0]) : { seoScore: 0 };
+    return jsonMatch ? { success: true, ...JSON.parse(jsonMatch[0]) } : { success: false, seoScore: 0 };
   } catch(e) {
-    console.error('analyzeSEO error:', e.message);
-    return { seoScore: 0, error: e.message };
+    return { success: false, seoScore: 0, error: e.message };
   }
 }
 
@@ -347,22 +468,21 @@ Return JSON:
 // 5 — COMPARE COMPETITORS
 // ─────────────────────────────────────────────────────────────────────────────
 async function compareCompetitors({ channelName, niche, competitors }, execute) {
-  console.log(`🔍 Comparing competitors for: ${channelName}`);
-
+  console.log(`🔍 compareCompetitors: ${niche}`);
   const competitorList = competitors || [];
 
   const searches = await Promise.all([
     execute('web:search', {
-      query: 'top ' + niche + ' youtube channels ' + CURRENT_YEAR + ' subscribers',
+      query: 'top ' + niche + ' youtube channels ' + CURRENT_YEAR + ' most subscribers',
       count: 8
     }),
     execute('web:search', {
-      query: niche + ' youtube channel comparison best creators',
+      query: 'best ' + niche + ' youtubers ' + CURRENT_YEAR + ' popular',
       count: 6
     }),
-    ...competitorList.slice(0, 3).map(c =>
+    ...competitorList.slice(0, 2).map(c =>
       execute('web:search', {
-        query: c + ' youtube channel subscribers views ' + CURRENT_YEAR,
+        query: c + ' youtube channel subscribers ' + CURRENT_YEAR,
         count: 4
       })
     )
@@ -370,38 +490,37 @@ async function compareCompetitors({ channelName, niche, competitors }, execute) 
 
   const allData = searches
     .flatMap(s => s?.results || [])
-    .map(r => r.title + ': ' + r.snippet)
+    .map(r => (r.title || '') + ': ' + (r.snippet || ''))
     .join('\n');
 
   const result = await execute('ai:generate', {
-    systemPrompt: `You are a competitive YouTube analytics expert for ${CURRENT_YEAR}.
+    systemPrompt: `You are a competitive YouTube analyst for ${CURRENT_YEAR}.
+List only channels ACTUALLY mentioned in the search results.
+If data is missing say "not found in search data".
 Return ONLY valid JSON, no markdown.`,
-    prompt: `Compare YouTube channels in niche: "${niche}"
-Your channel: ${channelName}
-Competitors to analyze: ${competitorList.join(', ') || 'find top 5 in niche'}
+    prompt: `Find YouTube competitors for niche: "${niche}"
+My channel: ${channelName || 'unknown'}
+Specific competitors to check: ${competitorList.join(', ') || 'find from search data'}
 
-Search data:
+Real search data:
 ${allData.slice(0, 2000)}
 
-Return JSON:
+Return JSON using only channels found in data:
 {
   "competitors": [
     {
-      "name": "channel name",
-      "estimatedSubscribers": "subscriber count",
-      "contentStyle": "their content approach",
-      "uploadFrequency": "how often they post",
-      "strengths": ["strength1", "strength2"],
-      "weaknesses": ["gap you can exploit"],
-      "topContentType": "what performs best for them",
-      "estimatedMonthlyViews": "monthly view estimate"
+      "name": "channel name from data",
+      "estimatedSubscribers": "from data or not found",
+      "contentStyle": "from data",
+      "strengths": ["from data"],
+      "weaknesses": ["gap you can fill"],
+      "topContentType": "from data"
     }
   ],
-  "marketGaps": ["gap1 you can fill", "gap2"],
+  "marketGaps": ["gaps found in data"],
   "yourAdvantages": ["what you can do better"],
-  "recommendedDifferentiator": "how to stand out from all competitors",
-  "contentOpportunities": ["opportunity1", "opportunity2", "opportunity3"],
-  "audienceOverlap": "how much audience overlap exists"
+  "recommendedDifferentiator": "how to stand out based on data",
+  "contentOpportunities": ["opportunities from data"]
 }`,
     maxTokens: 1500
   });
@@ -409,10 +528,9 @@ Return JSON:
   try {
     const raw = result?.output || '{}';
     const jsonMatch = raw.match(/\{[\s\S]*\}/);
-    return jsonMatch ? JSON.parse(jsonMatch[0]) : { competitors: [] };
+    return jsonMatch ? { success: true, ...JSON.parse(jsonMatch[0]) } : { success: false, competitors: [] };
   } catch(e) {
-    console.error('compareCompetitors error:', e.message);
-    return { competitors: [], error: e.message };
+    return { success: false, competitors: [], error: e.message };
   }
 }
 
@@ -420,25 +538,26 @@ Return JSON:
 // 6 — GET BEST UPLOAD TIME
 // ─────────────────────────────────────────────────────────────────────────────
 async function getBestUploadTime({ niche, targetAudience, channelSize }, execute) {
-  console.log(`⏰ Finding best upload time for: ${niche}`);
+  console.log(`⏰ getBestUploadTime: ${niche}`);
 
   const result = await execute('web:search', {
-    query: 'best time to upload youtube ' + niche + ' ' + CURRENT_YEAR + ' views engagement',
+    query: 'best time upload youtube ' + niche + ' ' + CURRENT_YEAR + ' views engagement data',
     count: 8
   });
 
   const data = (result?.results || [])
-    .map(r => r.title + ': ' + r.snippet).join('\n');
+    .map(r => (r.title || '') + ': ' + (r.snippet || '')).join('\n');
 
   const timing = await execute('ai:generate', {
-    systemPrompt: `You are a YouTube upload timing expert for ${CURRENT_YEAR}.
+    systemPrompt: `You are a YouTube timing expert for ${CURRENT_YEAR}.
 Return ONLY valid JSON, no markdown.`,
-    prompt: `Best upload time for YouTube channel:
+    prompt: `Best upload time for:
 Niche: ${niche}
-Target audience: ${targetAudience || 'general'}
-Channel size: ${channelSize || 'small to medium'}
+Audience: ${targetAudience || 'general'}
+Channel size: ${channelSize || 'growing'}
 
-Data: ${data.slice(0, 1000)}
+Real data:
+${data.slice(0, 1000)}
 
 Return JSON:
 {
@@ -447,16 +566,16 @@ Return JSON:
       "day": "Friday",
       "time": "3:00 PM",
       "timezone": "EST",
-      "reason": "why this works",
-      "expectedBoost": "2-3x normal views"
+      "reason": "reason from data",
+      "expectedBoost": "expected boost"
     }
   ],
   "bestDays": ["Friday", "Saturday", "Sunday"],
   "worstDays": ["Monday", "Tuesday"],
-  "uploadFrequency": "2-3 times per week",
-  "shortsFrequency": "daily for maximum reach",
+  "uploadFrequency": "recommended frequency",
+  "shortsFrequency": "shorts frequency",
   "platformTip": "YouTube specific tip for ${CURRENT_YEAR}",
-  "premiereTip": "whether to use YouTube premiere feature"
+  "premiereTip": "whether to use premiere"
 }`,
     maxTokens: 600
   });
@@ -464,10 +583,9 @@ Return JSON:
   try {
     const raw = timing?.output || '{}';
     const jsonMatch = raw.match(/\{[\s\S]*\}/);
-    return jsonMatch ? JSON.parse(jsonMatch[0]) : {};
+    return jsonMatch ? { success: true, ...JSON.parse(jsonMatch[0]) } : { success: false };
   } catch(e) {
-    console.error('getBestUploadTime error:', e.message);
-    return { error: e.message };
+    return { success: false, error: e.message };
   }
 }
 
@@ -475,56 +593,53 @@ Return JSON:
 // 7 — GENERATE THUMBNAIL IDEAS
 // ─────────────────────────────────────────────────────────────────────────────
 async function generateThumbnailIdeas({ videoTitle, niche, style }, execute) {
-  console.log(`🖼️ Generating thumbnail ideas for: ${videoTitle}`);
+  console.log(`🖼️ generateThumbnailIdeas: ${videoTitle}`);
 
   const result = await execute('web:search', {
-    query: 'viral youtube thumbnail design ' + niche + ' ' + CURRENT_YEAR + ' high CTR',
+    query: 'viral youtube thumbnail ' + niche + ' high CTR design ' + CURRENT_YEAR,
     count: 6
   });
 
   const data = (result?.results || [])
-    .map(r => r.title + ': ' + r.snippet).join('\n');
+    .map(r => (r.title || '') + ': ' + (r.snippet || '')).join('\n');
 
   const ideas = await execute('ai:generate', {
-    systemPrompt: `You are a YouTube thumbnail design expert.
-High CTR thumbnails that stop the scroll.
+    systemPrompt: `You are a YouTube thumbnail expert for ${CURRENT_YEAR}.
 Return ONLY valid JSON, no markdown.`,
-    prompt: `Generate thumbnail ideas for:
-Title: "${videoTitle}"
+    prompt: `Generate thumbnail ideas for: "${videoTitle}"
 Niche: ${niche}
 Style preference: ${style || 'any'}
 
-Thumbnail trend data:
+Trend data:
 ${data.slice(0, 800)}
 
 Return JSON:
 {
   "thumbnails": [
     {
-      "concept": "description of thumbnail visual",
-      "text": "big text overlay to use (max 4 words)",
-      "colors": "primary colors to use",
-      "emotion": "facial expression or emotion to show",
+      "concept": "visual description",
+      "text": "max 4 words overlay",
+      "colors": "colors to use",
+      "emotion": "expression or emotion",
       "background": "background description",
-      "ctrPrediction": "estimated CTR improvement",
+      "ctrPrediction": "expected CTR",
       "style": "bold|minimal|clean|dramatic"
     }
   ],
   "generalTips": ["tip1", "tip2", "tip3"],
   "colorsToUse": ["color1", "color2"],
-  "colorsToAvoid": ["color to avoid"],
-  "textRules": "rules for text on thumbnail"
+  "colorsToAvoid": ["color"],
+  "textRules": "rules for thumbnail text"
 }`,
-    maxTokens: 1000
+    maxTokens: 800
   });
 
   try {
     const raw = ideas?.output || '{}';
     const jsonMatch = raw.match(/\{[\s\S]*\}/);
-    return jsonMatch ? JSON.parse(jsonMatch[0]) : { thumbnails: [] };
+    return jsonMatch ? { success: true, ...JSON.parse(jsonMatch[0]) } : { success: false, thumbnails: [] };
   } catch(e) {
-    console.error('generateThumbnailIdeas error:', e.message);
-    return { thumbnails: [], error: e.message };
+    return { success: false, thumbnails: [], error: e.message };
   }
 }
 
