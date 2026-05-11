@@ -1,0 +1,172 @@
+{
+  "name": "youtube-analyzer",
+  "displayName": "YouTube Channel Analyzer",
+  "version": "1.0.0",
+  "icon": "📺",
+  "description": "Analyzes YouTube channels, finds trending videos, generates video ideas, analyzes SEO, compares competitors, and finds best upload times.",
+  "category": "analytics",
+  "author": "Aisite",
+
+  "keywords": [
+    "youtube analyzer",
+    "youtube channel analysis",
+    "youtube video ideas",
+    "youtube seo",
+    "youtube trending",
+    "youtube growth",
+    "youtube competitor",
+    "youtube strategy",
+    "video ideas generator",
+    "youtube thumbnail",
+    "youtube upload time",
+    "youtube analytics",
+    "channel analyzer",
+    "youtube content strategy"
+  ],
+
+  "flags": [
+    "isYouTubeAnalyzerTool",
+    "isResearchTool",
+    "isSocialTool"
+  ],
+
+  "functions": [
+    {
+      "name": "analyzeChannel",
+      "displayName": "Analyze Channel",
+      "description": "Full analysis of any YouTube channel",
+      "icon": "📺",
+      "estimatedTime": "15-25 seconds",
+      "input": {
+        "channelUrl": { "type": "string", "required": false },
+        "channelName": { "type": "string", "required": false }
+      },
+      "output": {
+        "channelName": "string",
+        "niche": "string",
+        "estimatedSubscribers": "string",
+        "contentStyle": "string",
+        "topTopics": "string[]",
+        "growthTrend": "string",
+        "uniqueValueProposition": "string"
+      }
+    },
+    {
+      "name": "findTrendingVideos",
+      "displayName": "Find Trending Videos",
+      "description": "Finds what video topics are trending right now in a niche",
+      "icon": "🔥",
+      "estimatedTime": "15-20 seconds",
+      "input": {
+        "niche": { "type": "string", "required": true },
+        "channelName": { "type": "string", "required": false },
+        "count": { "type": "number", "default": 8 }
+      },
+      "output": {
+        "trending": "TrendingVideo[]",
+        "risingTopics": "string[]",
+        "peakingTopics": "string[]",
+        "avoidTopics": "string[]",
+        "bestVideoLength": "string",
+        "shortsOpportunity": "string"
+      }
+    },
+    {
+      "name": "generateVideoIdeas",
+      "displayName": "Generate Video Ideas",
+      "description": "Generates viral video ideas based on trends and channel analysis",
+      "icon": "💡",
+      "estimatedTime": "20-30 seconds",
+      "input": {
+        "niche": { "type": "string", "required": true },
+        "channelAnalysis": { "type": "object", "required": false },
+        "trendData": { "type": "object", "required": false },
+        "count": { "type": "number", "default": 10 }
+      },
+      "output": {
+        "ideas": "VideoIdea[]",
+        "seriesIdea": "string",
+        "shortsIdeas": "string[]",
+        "contentCalendar": "string"
+      }
+    },
+    {
+      "name": "analyzeSEO",
+      "displayName": "Analyze Video SEO",
+      "description": "Analyzes title SEO and gives optimization recommendations",
+      "icon": "🔎",
+      "estimatedTime": "10-15 seconds",
+      "input": {
+        "videoTitle": { "type": "string", "required": true },
+        "niche": { "type": "string", "required": true },
+        "channelName": { "type": "string", "required": false }
+      },
+      "output": {
+        "seoScore": "number",
+        "titleAnalysis": "object",
+        "recommendedTags": "string[]",
+        "bestPostTime": "string",
+        "improvements": "string[]"
+      }
+    },
+    {
+      "name": "compareCompetitors",
+      "displayName": "Compare Competitors",
+      "description": "Finds and compares top YouTube competitors in your niche",
+      "icon": "🔍",
+      "estimatedTime": "20-25 seconds",
+      "input": {
+        "channelName": { "type": "string", "required": true },
+        "niche": { "type": "string", "required": true },
+        "competitors": { "type": "string[]", "required": false }
+      },
+      "output": {
+        "competitors": "Competitor[]",
+        "marketGaps": "string[]",
+        "contentOpportunities": "string[]",
+        "recommendedDifferentiator": "string"
+      }
+    },
+    {
+      "name": "getBestUploadTime",
+      "displayName": "Get Best Upload Time",
+      "description": "Finds best days and times to upload for maximum views",
+      "icon": "⏰",
+      "estimatedTime": "8-12 seconds",
+      "input": {
+        "niche": { "type": "string", "required": true },
+        "targetAudience": { "type": "string", "required": false },
+        "channelSize": { "type": "string", "required": false }
+      },
+      "output": {
+        "bestTimes": "UploadTime[]",
+        "bestDays": "string[]",
+        "uploadFrequency": "string",
+        "platformTip": "string"
+      }
+    },
+    {
+      "name": "generateThumbnailIdeas",
+      "displayName": "Generate Thumbnail Ideas",
+      "description": "Generates high CTR thumbnail concepts for any video",
+      "icon": "🖼️",
+      "estimatedTime": "8-12 seconds",
+      "input": {
+        "videoTitle": { "type": "string", "required": true },
+        "niche": { "type": "string", "required": true },
+        "style": { "type": "string", "required": false }
+      },
+      "output": {
+        "thumbnails": "ThumbnailConcept[]",
+        "generalTips": "string[]",
+        "colorsToUse": "string[]"
+      }
+    }
+  ],
+
+  "requirements": {
+    "apiKeys": [],
+    "optional": ["YOUTUBE_API_KEY for real subscriber counts"],
+    "nodeModules": []
+  }
+}
