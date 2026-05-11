@@ -1,0 +1,191 @@
+{
+  "name": "trend-detector",
+  "displayName": "Universal Trend Detector",
+  "version": "1.0.0",
+  "icon": "📈",
+  "description": "Detects real trending topics across all platforms using live web data, Reddit signals, news cycles, and AI prediction. Used by carousel, LinkedIn, Instagram, Twitter tools.",
+  "category": "analytics",
+  "author": "Aisite",
+
+  "keywords": [
+    "trending topics",
+    "viral content",
+    "trend detection",
+    "what to post",
+    "viral predictor",
+    "trending hashtags",
+    "content strategy",
+    "viral potential",
+    "best time to post",
+    "competitor analysis",
+    "social media trends",
+    "instagram trends",
+    "linkedin trends",
+    "twitter trends",
+    "tiktok trends"
+  ],
+
+  "flags": [
+    "isResearchTool",
+    "isSocialTool",
+    "isInstagramTool",
+    "isLinkedInGrowthTool",
+    "isCarouselTool"
+  ],
+
+  "functions": [
+    {
+      "name": "findTrendingTopics",
+      "displayName": "Find Trending Topics",
+      "description": "Finds topics trending right now using Google, Reddit, news, and competitor signals",
+      "icon": "📈",
+      "estimatedTime": "15-25 seconds",
+      "usedBy": ["carousel-creator", "social-media-os", "linkedin-growth", "instagram-analyzer"],
+      "input": {
+        "niche": { "type": "string", "required": true },
+        "platform": { "type": "string", "options": ["instagram", "linkedin", "twitter", "tiktok", "youtube", "general"] },
+        "industry": { "type": "string", "required": false },
+        "count": { "type": "number", "default": 8 },
+        "timeframe": { "type": "string", "default": "this week" }
+      },
+      "output": {
+        "trending": "TrendingTopic[]",
+        "emergingTopics": "EmergingTopic[]",
+        "avoidTopics": "string[]",
+        "trendInsight": "string",
+        "bestContentStrategy": "string"
+      }
+    },
+    {
+      "name": "getTrendPulse",
+      "displayName": "Get Trend Pulse",
+      "description": "Quick check — is this specific topic trending RIGHT NOW?",
+      "icon": "💓",
+      "estimatedTime": "8-12 seconds",
+      "input": {
+        "topic": { "type": "string", "required": true },
+        "platform": { "type": "string", "required": false }
+      },
+      "output": {
+        "isTrending": "boolean",
+        "trendStrength": "weak|moderate|strong|viral",
+        "trendScore": "number",
+        "momentum": "rising|stable|falling",
+        "windowToPost": "string",
+        "recommendation": "string"
+      }
+    },
+    {
+      "name": "analyzeCompetitorContent",
+      "displayName": "Analyze Competitor Content",
+      "description": "Finds what top creators in your niche are posting that gets engagement",
+      "icon": "🔍",
+      "estimatedTime": "15-20 seconds",
+      "input": {
+        "niche": { "type": "string", "required": true },
+        "platform": { "type": "string", "required": false },
+        "competitors": { "type": "string[]", "required": false }
+      },
+      "output": {
+        "topContentFormats": "string[]",
+        "winningHooks": "string[]",
+        "contentGaps": "string[]",
+        "recommendedAngles": "ContentAngle[]"
+      }
+    },
+    {
+      "name": "analyzeHashtags",
+      "displayName": "Analyze Hashtags",
+      "description": "Finds best hashtags by size, trending status, and competition level",
+      "icon": "#️⃣",
+      "estimatedTime": "10-15 seconds",
+      "input": {
+        "niche": { "type": "string", "required": true },
+        "platform": { "type": "string", "required": false },
+        "count": { "type": "number", "default": 30 }
+      },
+      "output": {
+        "strategy": "HashtagStrategy",
+        "recommended30": "string[]",
+        "trendingNow": "string[]",
+        "avoid": "string[]"
+      }
+    },
+    {
+      "name": "predictViralPotential",
+      "displayName": "Predict Viral Potential",
+      "description": "Predicts if a specific topic will go viral with score and recommendations",
+      "icon": "🔮",
+      "estimatedTime": "10-15 seconds",
+      "input": {
+        "topic": { "type": "string", "required": true },
+        "contentType": { "type": "string", "required": false },
+        "platform": { "type": "string", "required": false },
+        "niche": { "type": "string", "required": false }
+      },
+      "output": {
+        "viralScore": "number (0-100)",
+        "viralProbability": "low|medium|high|viral",
+        "predictedReach": "string",
+        "recommendation": "POST NOW|WAIT 2 DAYS|REWORK ANGLE|SKIP",
+        "bestHook": "string",
+        "improvements": "string[]"
+      }
+    },
+    {
+      "name": "getBestPostTime",
+      "displayName": "Get Best Post Time",
+      "description": "Finds best days and times to post for maximum reach in your niche",
+      "icon": "⏰",
+      "estimatedTime": "8-12 seconds",
+      "input": {
+        "niche": { "type": "string", "required": true },
+        "platform": { "type": "string", "required": false },
+        "targetAudience": { "type": "string", "required": false }
+      },
+      "output": {
+        "bestTimes": "PostTime[]",
+        "bestDays": "string[]",
+        "postingFrequency": "string",
+        "platformSpecificTip": "string"
+      }
+    },
+    {
+  "name": "suggestContentAngles",
+  "displayName": "Suggest Unique Content Angles",
+  "description": "Suggests unique content angles in the same niche that stand out from trending topics",
+  "icon": "💡",
+  "estimatedTime": "10-15 seconds",
+  "input": {
+    "topic": { "type": "string", "required": true },
+    "niche": { "type": "string", "required": true },
+    "platform": { "type": "string", "required": false },
+    "count": { "type": "number", "default": 6 }
+  },
+  "output": {
+    "angles": "ContentAngle[]",
+    "contentTheme": "string",
+    "audienceInsight": "string",
+    "standOutTip": "string"
+  }
+}
+    
+  ],
+  
+
+  "platforms": ["instagram", "linkedin", "twitter", "tiktok", "youtube", "general"],
+
+  "dataSources": [
+    "Google Search (real time)",
+    "Reddit Hot Posts",
+    "News Cycle Detection",
+    "Competitor Content Analysis",
+    "Hashtag Trend Analysis"
+  ],
+
+  "requirements": {
+    "apiKeys": [],
+    "optional": ["SERPAPI_KEY for Google Trends data"],
+    "nodeModules": []
+  }
+}

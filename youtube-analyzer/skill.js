@@ -227,12 +227,22 @@ async function findTrendingVideos({ niche, channelName, count }, execute) {
 
   // Even if search found nothing — still try with channel page content
 // Small/new channels have no web presence but YouTube page still works
-if (!searchContext && !channelPageContent) {
-  return {
-    success: false,
-    error: `Could not reach YouTube for "${handle}". Please check your internet connection and try again.`
-  };
-}
+// Combine ALL data found
+  const combinedContext = (searchContext || '') + '\n' + (channelPageContent || '');
+
+  if (!searchContext && !channelPageContent) {
+    return {
+      success: false,
+      error: `Could not reach YouTube for "${handle}". Please check your internet connection and try again.`
+    };
+  }
+
+  if (combinedContext.trim().length < 30) {
+    return {
+      success: false,
+      error: `"${handle}" appears to be a very new or private channel with no public data yet.`
+    };
+  }
 
 // If search found little data — use what we have + warn user
 const combinedContext = (searchContext || '') + '\n' + (channelPageContent || '');
@@ -252,7 +262,7 @@ Return ONLY valid JSON, no markdown.`,
 ${channelName ? 'Channel context: ' + channelName : ''}
 
 REAL web search data:
-${searchContext.slice(0, 2000)}
+${combinedContext.slice(0, 2500)}
 
 Reddit community signals:
 ${redditSignals || 'none found'}
